@@ -1,0 +1,132 @@
+/* RESET BÁSICO E CONFIGURAÇÕES GLOBAIS */
+:root {
+    --cor-principal: #FF69B4; /* Rosa Choque (Hot Pink) - Cor dos Corações/Destaques */
+    --cor-secundaria: #F0A5D8; /* Rosa Claro - Cor de Fundo Suave */
+    --cor-fundo: #FFF0F5; /* Fundo Muito Claro (Lavender Blush) */
+    --cor-texto-escuro: #4B0082; /* Roxo Escuro (Indigo) */
+    --cor-texto-claro: white;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Comic Sans MS', 'Arial', sans-serif; /* Fonte mais divertida */
+}
+
+body {
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-escuro);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* CONTÊINER PRINCIPAL DO JOGO */
+.bingo-container {
+    background-color: var(--cor-secundaria);
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4); /* Sombra rosa forte */
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+    border: 5px solid var(--cor-principal);
+}
+
+h1 {
+    color: var(--cor-texto-escuro);
+    margin-bottom: 25px;
+    font-size: 3em;
+    text-shadow: 1px 1px 0 var(--cor-texto-claro);
+}
+
+/* ÁREA DE SORTEIO DO NÚMERO */
+.display-sorteio {
+    margin-bottom: 30px;
+    padding: 25px;
+    border: 3px dashed var(--cor-principal); /* Borda de "coração" ou divertida */
+    border-radius: 15px;
+    background-color: var(--cor-fundo);
+}
+
+.numero-sorteado {
+    font-size: 6em;
+    font-weight: bold;
+    color: var(--cor-principal);
+    animation: pulse 1s infinite; /* Efeito de batimento de coração */
+}
+
+/* BOTÃO */
+#btnSortear {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-claro);
+    border: none;
+    padding: 15px 35px;
+    font-size: 1.3em;
+    border-radius: 30px; /* Borda arredondada */
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.3s;
+    margin-top: 15px;
+    box-shadow: 0 4px 0 #D02090; /* Sombra para efeito 3D */
+}
+
+#btnSortear:hover {
+    background-color: #FF1493; /* Rosa mais escuro ao passar o mouse */
+    transform: translateY(-2px); /* Efeito de levantar */
+}
+
+/* CARTELA DE BINGO (TABELA) */
+.cartela-bingo {
+    width: 100%;
+    margin-top: 25px;
+    border-collapse: collapse;
+}
+
+.cartela-bingo th, .cartela-bingo td {
+    border: 2px solid var(--cor-principal);
+    padding: 18px;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: var(--cor-texto-escuro);
+}
+
+.cartela-bingo th {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-claro);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cartela-bingo td {
+    background-color: var(--cor-texto-claro);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* ESTILO PARA NÚMEROS JÁ SORTEADOS (ou marcados) */
+.marcado {
+    background-color: var(--cor-principal);
+    color: var(--cor-texto-claro);
+    text-decoration: none;
+    position: relative;
+    /* Adiciona um pequeno coração ao marcar */
+}
+.marcado::after {
+    content: "💖";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    opacity: 0.8;
+}
+
+/* ANIMAÇÃO SIMPLES (Batimento Cardíaco) */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}

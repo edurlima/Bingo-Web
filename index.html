@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo POO Profissional - Sorteador Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>🎉 Bingo POO Profissional - Módulo Sorteador 🎉</h1>
+        <p>Desenvolvido com lógica de Orientação a Objetos (POO) em JavaScript</p>
+    </header>
+
+    <main>
+        
+        <section id="placar">
+            <div id="ultimo-sorteio">
+                <span id="letra-sorteada">B</span>
+                <span id="numero-sorteado">00</span>
+            </div>
+            <p id="status-texto">Clique em "Sortear" para começar!</p>
+        </section>
+        
+        <div id="alerta-mascote">
+            <div id="mascote-container">
+                <span id="mascote-emoji">💖</span> 
+            </div>
+            <div id="mensagem-alerta">
+                Tudo pronto para mais um sorteio!
+            </div>
+        </div>
+        <section id="controles">
+            <button id="btn-sortear">Sortear Próximo Número</button>
+            <div class="opcoes-adicionais">
+                <button id="btn-alternar-vitoria">Tipo de Vitória: <span id="tipo-vitoria-atual">Quina e Bingo</span></button>
+                <button id="btn-reiniciar">Reiniciar Bingo</button>
+            </div>
+        </section>
+        
+        <section id="seletor-idioma" style="grid-column: 1 / 3; text-align: center; padding: 10px;">
+            <p style="margin-bottom: 5px;">Selecione o Idioma:</p>
+            <button onclick="mudarIdioma('pt-br')" style="padding: 5px 10px; margin-right: 5px;">Português 🇧🇷</button>
+            <button onclick="mudarIdioma('en-us')" style="padding: 5px 10px; margin-right: 5px;">English 🇺🇸</button>
+            <button onclick="mudarIdioma('es-es')" style="padding: 5px 10px; margin-right: 5px;">Español 🇪🇸</button>
+            <button onclick="mudarIdioma('zh-cn')" style="padding: 5px 10px;">中文 (Zh) 🇨🇳</button>
+        </section>
+        <section id="historico">
+            <h2>Bolinhas Sorteadas (<span id="qtd-sorteadas">0</span>/75)</h2>
+            <div id="bolinhas-container">
+                </div>
+        </section>
+
+        <section id="cartela-exemplo">
+            <h2>🎲 Cartela de Exemplo do Sorteador</h2>
+            <div id="bingo-card">
+                <div class="col-header">B</div>
+                <div class="col-header">I</div>
+                <div class="col-header">N</div>
+                <div class="col-header">G</div>
+                <div class="col-header">O</div>
+                </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Projeto de Portfólio - Módulo Sorteador</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
