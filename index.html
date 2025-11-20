@@ -3,72 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo POO Profissional - Sorteador Web</title>
+    <title>💖 Bingo POO Profissional - Módulo Sorteador 💖</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h1>🎉 Bingo POO Profissional - Módulo Sorteador 🎉</h1>
-        <p>Desenvolvido com lógica de Orientação a Objetos (POO) em JavaScript</p>
-    </header>
+    <div class="bingo-container">
+        
+        <header class="config-menu">
+            <h1>🎉 Bingo POO Profissional - Módulo Sorteador 🎉</h1>
 
-    <main>
-        
-        <section id="placar">
-            <div id="ultimo-sorteio">
-                <span id="letra-sorteada">B</span>
-                <span id="numero-sorteado">00</span>
-            </div>
-            <p id="status-texto">Clique em "Sortear" para começar!</p>
-        </section>
-        
-        <div id="alerta-mascote">
-            <div id="mascote-container">
-                <span id="mascote-emoji">💖</span> 
-            </div>
-            <div id="mensagem-alerta">
-                Tudo pronto para mais um sorteio!
-            </div>
-        </div>
-        <section id="controles">
-            <button id="btn-sortear">Sortear Próximo Número</button>
-            <div class="opcoes-adicionais">
-                <button id="btn-alternar-vitoria">Tipo de Vitória: <span id="tipo-vitoria-atual">Quina e Bingo</span></button>
-                <button id="btn-reiniciar">Reiniciar Bingo</button>
-            </div>
-        </section>
-        
-        <section id="seletor-idioma" style="grid-column: 1 / 3; text-align: center; padding: 10px;">
-            <p style="margin-bottom: 5px;">Selecione o Idioma:</p>
-            <button onclick="mudarIdioma('pt-br')" style="padding: 5px 10px; margin-right: 5px;">Português 🇧🇷</button>
-            <button onclick="mudarIdioma('en-us')" style="padding: 5px 10px; margin-right: 5px;">English 🇺🇸</button>
-            <button onclick="mudarIdioma('es-es')" style="padding: 5px 10px; margin-right: 5px;">Español 🇪🇸</button>
-            <button onclick="mudarIdioma('zh-cn')" style="padding: 5px 10px;">中文 (Zh) 🇨🇳</button>
-        </section>
-        <section id="historico">
-            <h2>Bolinhas Sorteadas (<span id="qtd-sorteadas">0</span>/75)</h2>
-            <div id="bolinhas-container">
+            <div class="top-row">
+                <div class="idioma-selecao">
+                    <label>Selecione o Idioma:</label>
+                    <button class="idioma-btn" data-lang="pt-br">Português BR</button>
+                    <button class="idioma-btn" data-lang="en-us">English US</button>
+                    <button class="idioma-btn" data-lang="es-es">Español ES</button>
+                    <button class="idioma-btn" data-lang="zh-cn">中文 (ZH) CN</button> 
                 </div>
-        </section>
-
-        <section id="cartela-exemplo">
-            <h2>🎲 Cartela de Exemplo do Sorteador</h2>
-            <div id="bingo-card">
-                <div class="col-header">B</div>
-                <div class="col-header">I</div>
-                <div class="col-header">N</div>
-                <div class="col-header">G</div>
-                <div class="col-header">O</div>
+                
+                <div class="estilos-jogo">
+                    <label>Tipo de Vitória:</label>
+                    <button>Quina</button>
+                    <button>Bingo</button>
                 </div>
-        </section>
+            </div>
+            
+            <hr>
 
-    </main>
+            <div class="action-row">
+                <button id="btnSortear">Sortear Próximo Número</button>
+                <button id="btnReiniciar">Reiniciar Bingo</button>
+                <div class="controle-vitoria">
+                <label>Modo de Vitória:</label>
+                <span id="tipo-vitoria-atual" class="modo-atual">Quina e Bingo</span>
+                <button id="btnAlternarVitoria" class="btn-alternar">Alternar</button> 
+            </div>
+        </header>
+        
+        <hr>
 
-    <footer>
-        <p>&copy; 2025 Projeto de Portfólio - Módulo Sorteador</p>
-    </footer>
+        <main class="main-content-area">
+            
+            <section class="visor-sorteador">
+                <h2>Último Número Sorteado</h2>
+                <div class="display-sorteio">
+                    <p class="numero-sorteado">--</p>
+                </div>
+                <p>Bingo POO Profissional Sorteadas (0/75)</p>
+            </section>
+
+            <section class="cartelas-area">
+                <h3>Minhas Cartelas</h3>
+                
+                <div class="cartelas-agrupadas">
+                    <div class="cartela-container cartela-exemplo">
+                        <p>Conteúdo da Cartela 1 (via JS)</p>
+                    </div>
+
+                    </div>
+
+                <button id="btnAddCartela" class="btn-add-cartela">+ Adicionar Mais Cartelas</button>
+            </section>
+            
+        </main>
+
+    </div>
 
     <script src="script.js"></script>
 </body>
+<div id="notificacao-vitoria" class="notificacao-vitoria">
+    <p id="notificacao-mensagem"></p>
+</div>
 </html>

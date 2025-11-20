@@ -1,29 +1,29 @@
-// --- 1. CLASSE SorteadorBingo (Lógica Base POO) ---
+// ==============================================================================
+// 1. CLASSE SorteadorBingo (Lógica Base POO)
+// ==============================================================================
 
 class SorteadorBingo {
     #qtdNumeros; #qtdBolinhasSorteadas; #bolinhasSorteadas; #numeros;
-    #qtdBolinhasNaoSorteadas; #ultimoNumeroSorteado; #todosNumerosSortadas;
+    #qtdBolinhasNaoSortadas; #ultimoNumeroSorteado; #todosNumerosSortadas;
 
     constructor(qtdNumeros) {
         this.#qtdNumeros = qtdNumeros;
         this.#qtdBolinhasSorteadas = 0;
         this.#bolinhasSorteadas = [];
         this.#numeros = Array.from({ length: qtdNumeros }, (_, i) => i + 1);
-        this.#qtdBolinhasNaoSorteadas = qtdNumeros;
+        this.#qtdBolinhasNaoSortadas = qtdNumeros;
         this.#ultimoNumeroSorteado = null;
         this.#todosNumerosSortadas = false;
     }
 
-    // Getters (@property)
     get qtdNumeros() { return this.#qtdNumeros; }
     get qtdBolinhasSorteadas() { return this.#qtdBolinhasSorteadas; }
     get bolinhasSorteadas() { return [...this.#bolinhasSorteadas].sort((a, b) => a - b); }
     get ultimoNumeroSorteado() { return this.#ultimoNumeroSorteado; }
     get todosNumerosSortadas() { return this.#todosNumerosSortadas; }
     
-    // Método principal: sortear_numero()
     sortearNumero() {
-        if (this.#qtdBolinhasNaoSorteadas === 0) {
+        if (this.#qtdBolinhasNaoSortadas === 0) {
             this.#todosNumerosSortadas = true;
             return false;
         }
@@ -35,9 +35,9 @@ class SorteadorBingo {
         this.#numeros.splice(indiceSorteado, 1);
         this.#qtdBolinhasSorteadas++;
         this.#bolinhasSorteadas.push(numeroSorteado);
-        this.#qtdBolinhasNaoSorteadas = this.#numeros.length;
+        this.#qtdBolinhasNaoSortadas = this.#numeros.length;
 
-        if (this.#qtdBolinhasNaoSorteadas === 0) {
+        if (this.#qtdBolinhasNaoSortadas === 0) {
             this.#todosNumerosSortadas = true;
         }
 
@@ -46,17 +46,18 @@ class SorteadorBingo {
 }
 
 
-// --- 2. CLASSE SorteadorBingoBrasileiro (Herança e Lógica de Vitória) ---
+// ==============================================================================
+// 2. CLASSE SorteadorBingoBrasileiro (Herança, Lógica de Vitória e Geração HTML)
+// ==============================================================================
 
 class SorteadorBingoBrasileiro extends SorteadorBingo {
     #letra; #formasVitoria; #tipoVitoria;
 
     constructor() {
         super(75);
-        
         this.#letra = null;
         this.#formasVitoria = ["Quina e Bingo", "Bingo"];
-        this.#tipoVitoria = 0; 
+        this.#tipoVitoria = 0;
         
         this._letrasBingo = {
             'B': [1, 15], 'I': [16, 30], 'N': [31, 45], 'G': [46, 60], 'O': [61, 75]
@@ -65,21 +66,19 @@ class SorteadorBingoBrasileiro extends SorteadorBingo {
 
     get letra() { return this.#letra; }
     get tipoVitoria() { return this.#formasVitoria[this.#tipoVitoria]; }
+    get tipoVitoriaIndice() { return this.#tipoVitoria; }
+    
     set tipoVitoria(novoTipo) { 
         if (novoTipo >= 0 && novoTipo < this.#formasVitoria.length) {
             this.#tipoVitoria = novoTipo; 
         }
     }
-    get tipoVitoriaIndice() { return this.#tipoVitoria; }
 
     sortearNumero() {
         const sorteado = super.sortearNumero();
-
         if (sorteado) {
-            const numero = this.ultimoNumeroSorteado;
-            this.#letra = this.#encontrarLetra(numero);
+            this.#letra = this.#encontrarLetra(this.ultimoNumeroSorteado);
         }
-
         return sorteado;
     }
     
@@ -93,7 +92,7 @@ class SorteadorBingoBrasileiro extends SorteadorBingo {
         return "ERRO";
     }
 
-    static gerarCartela() {
+    static gerarCartela(idCartela) {
         const cartela = {};
         const rangeMap = {
             'B': [1, 15], 'I': [16, 30], 'N': [31, 45], 'G': [46, 60], 'O': [61, 75]
@@ -111,67 +110,75 @@ class SorteadorBingoBrasileiro extends SorteadorBingo {
             cartela[letra] = numeros.sort((a, b) => a - b);
         }
         cartela['N'][2] = 'FREE';
-        return cartela;
+        
+        return cartela; // Retorna apenas o objeto de dados
     }
     
-    // Método Estático: Checa se a cartela fez Quina ou Bingo
-    static verificarVitoria(cartela, numerosSorteados) {
+    static montarCartelaHTML(cartelaData, id) { 
+        const letras = ['B', 'I', 'N', 'G', 'O'];
+        let html = `<table class="cartela-exemplo" id="${id}">`; 
+        
+        html += '<thead><tr>';
+        letras.forEach(letra => { html += `<th>${letra}</th>`; });
+        html += '</tr></thead>';
+        
+        html += '<tbody>';
+        for (let i = 0; i < 5; i++) {
+            html += '<tr>';
+            letras.forEach(letra => {
+                const valor = cartelaData[letra][i];
+                const isFree = valor === 'FREE';
+                const idCelula = `${id}-${letra}-${i}`;
+                
+                const classeInicial = isFree ? 'marcado' : ''; 
+                
+                html += `<td id="${idCelula}" class="cartela-celula ${classeInicial}" data-numero="${valor}">${valor}</td>`;
+            });
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+    }
+
+    static verificarVitoria(bingoInstance, cartela, numerosSorteados) {
         const chamadosSet = new Set(numerosSorteados);
         const letras = ['B', 'I', 'N', 'G', 'O'];
-
         const isMarcado = (val) => val === 'FREE' || chamadosSet.has(val);
 
         let quinaEncontrada = false;
         
-        // Checagem de Linhas e Colunas (Quinas)
+        // Checagem de Quina (Linhas, Colunas, Diagonais)
         for (let i = 0; i < 5; i++) {
             let acertosLinha = 0;
             let acertosColuna = 0;
             
-            for (const letra of letras) {
-                if (isMarcado(cartela[letra][i])) {
-                    acertosLinha++;
-                }
-                if (isMarcado(cartela[letras[i]][letras.indexOf(letra)])) {
-                    acertosColuna++;
-                }
+            for (let j = 0; j < 5; j++) {
+                if (isMarcado(cartela[letras[j]][i])) { acertosLinha++; }
+                if (isMarcado(cartela[letras[i]][letras.indexOf(letras[j])])) { acertosColuna++; }
             }
-            if (acertosLinha === 5 || acertosColuna === 5) {
-                quinaEncontrada = true;
-            }
+            if (acertosLinha === 5 || acertosColuna === 5) { quinaEncontrada = true; }
         }
         
-        // Checagem de Diagonais (Quinas Diagonais)
         let acertosDiagPrincipal = 0;
         let acertosDiagSecundaria = 0;
         for (let i = 0; i < 5; i++) {
-            if (isMarcado(cartela[letras[i]][i])) { 
-                acertosDiagPrincipal++;
-            }
-            if (isMarcado(cartela[letras[4 - i]][i])) { 
-                acertosDiagSecundaria++;
-            }
+            if (isMarcado(cartela[letras[i]][i])) { acertosDiagPrincipal++; }
+            if (isMarcado(cartela[letras[4 - i]][i])) { acertosDiagSecundaria++; }
         }
-        if (acertosDiagPrincipal === 5 || acertosDiagSecundaria === 5) {
-            quinaEncontrada = true;
-        }
+        if (acertosDiagPrincipal === 5 || acertosDiagSecundaria === 5) { quinaEncontrada = true; }
 
-        if (quinaEncontrada) {
+
+        // 1. Se o modo é "Quina e Bingo" (índice 0) E houve quina, retornamos Quina
+        if (bingoInstance.tipoVitoriaIndice === 0 && quinaEncontrada) {
             return { tipo: "Quina", detalhe: "Horizontal/Vertical/Diagonal" };
         }
         
-        // Checagem de BINGO
-        const totalRequired = 24; 
-        const numerosNaCartela = letras.reduce((acc, letra) => {
-            cartela[letra].forEach(val => {
-                if (val !== 'FREE' && chamadosSet.has(val)) {
-                    acc.add(val);
-                }
-            });
-            return acc;
-        }, new Set());
-
-        if (numerosNaCartela.size >= totalRequired) {
+        // Checagem de BINGO (24 números marcados)
+        const totalMarcado = letras.reduce((count, letra) => {
+            return count + cartela[letra].filter(isMarcado).length;
+        }, 0);
+        
+        if (totalMarcado >= 24) { 
             return { tipo: "Bingo", detalhe: "Cartela Completa" };
         }
 
@@ -180,317 +187,287 @@ class SorteadorBingoBrasileiro extends SorteadorBingo {
 }
 
 
-// --- 3. OBJETO DE TRADUÇÃO E CONFIGURAÇÃO DE IDIOMA (4 IDIOMAS) ---
+// ==============================================================================
+// 3. OBJETO DE TRADUÇÃO E CONFIGURAÇÃO DE IDIOMA
+// ==============================================================================
 
 const TRADUCOES = {
-    // -------------------------------------------------------------------
-    // 1. PORTUGUÊS (pt-br)
-    // -------------------------------------------------------------------
     'pt-br': {
         SAUDACAO: 'Bem-vindo! Tudo pronto para começar.',
         CHAMANDO: (letra, numero) => `Chamando: [${letra}] - ${numero}! Fique de olho na sua cartela.`,
-        QUINA_MSG: '✨ QUINA! QUINA! Quase lá! Mascote celebra!',
-        BINGO_MSG: 'BINGO!!! 🎉🎉🎉 VENCEDOR! Que sorte!',
+        QUINA_MSG: '✨ QUINA! QUINA! Quase lá!',
+        BINGO_MSG: 'BINGO!!! 🎉🎉🎉 VENCEDOR!',
         FIM_JOGO: 'FIM DE JOGO! Todos os números foram sorteados.',
         PLACEHOLDER_INICIAL: 'Clique em "Sortear" para começar!',
-        MSG_ALERTA_CARTELA: (tipo) => `Atenção: A cartela de exemplo fez uma ${tipo}!`,
-        EMOJIS: {
-            INICIAL: '💖',
-            CHAMANDO: '📣',
-            QUINA: '🌟',
-            BINGO: '👑'
-        },
-        BOTOES: {
-            TITULO_PL: 'Sorteador',
-            TITULO_B: 'Bingo POO Profissional',
-            SORTEAR: 'Sortear Próximo Número',
-            TIPO_VITORIA: 'Tipo de Vitória',
-            REINICIAR: 'Reiniciar Bingo',
-            TITULO_MENU: 'Selecione o Idioma:'
-        }
+        BOTOES: { SORTEAR: 'Sortear Próximo Número', REINICIAR: 'Reiniciar Bingo', TITULO_B: 'Bingo POO Profissional', TITULO_PL: 'Sorteador' }
     },
-    // -------------------------------------------------------------------
-    // 2. INGLÊS (en-us)
-    // -------------------------------------------------------------------
-    'en-us': {
+    'en-us': { 
         SAUDACAO: 'Welcome! Everything is ready to start.',
         CHAMANDO: (letter, number) => `Calling: [${letter}] - ${number}! Check your card.`,
-        QUINA_MSG: '✨ QUINA! QUINA! Almost there! Mascot celebrates!',
-        BINGO_MSG: 'BINGO!!! 🎉🎉🎉 WINNER! What luck!',
+        QUINA_MSG: '✨ QUINA! QUINA! Almost there!',
+        BINGO_MSG: 'BINGO!!! 🎉🎉🎉 WINNER!',
         FIM_JOGO: 'GAME OVER! All numbers have been drawn.',
         PLACEHOLDER_INICIAL: 'Click "Draw" to start!',
-        MSG_ALERTA_CARTELA: (type) => `Attention: The sample card scored a ${type}!`,
-        EMOJIS: {
-            INICIAL: '💖',
-            CHAMANDO: '📣',
-            QUINA: '🌟',
-            BINGO: '👑'
-        },
-        BOTOES: {
-            TITULO_PL: 'Sorteador',
-            TITULO_B: 'POO Professional Bingo',
-            SORTEAR: 'Draw Next Number',
-            TIPO_VITORIA: 'Victory Type',
-            REINICIAR: 'Restart Bingo',
-            TITULO_MENU: 'Select Language:'
-        }
+        BOTOES: { SORTEAR: 'Draw Next Number', REINICIAR: 'Restart Bingo', TITULO_B: 'POO Professional Bingo', TITULO_PL: 'Sorteador' }
     },
-    // -------------------------------------------------------------------
-    // 3. ESPANHOL (es-es)
-    // -------------------------------------------------------------------
-    'es-es': {
+    'es-es': { 
         SAUDACAO: '¡Bienvenido! Todo listo para empezar.',
         CHAMANDO: (letra, numero) => `Llamando: [${letra}] - ${numero}! Revisa tu cartón.`,
-        QUINA_MSG: '✨ ¡QUINA! ¡QUINA! ¡Casi lo logras! ¡La mascota celebra!',
-        BINGO_MSG: '¡¡¡BINGO!!! 🎉🎉🎉 ¡GANADOR! ¡Qué suerte!',
-        FIM_JOGO: 'FIN DEL JUEGO! Todos los números han sido sorteados.',
+        QUINA_MSG: '✨ ¡QUINA! ¡QUINA! ¡Casi lo logras!',
+        BINGO_MSG: '¡¡¡BINGO!!! 🎉🎉🎉 ¡GANADOR!',
+        FIM_JUEGO: 'FIN DEL JUEGO! Todos los números han sido sorteados.',
         PLACEHOLDER_INICIAL: '¡Haz clic en "Sortear" para empezar!',
-        MSG_ALERTA_CARTELA: (tipo) => `Atención: ¡El cartón de ejemplo hizo un ${tipo}!`,
-        EMOJIS: {
-            INICIAL: '💖',
-            CHAMANDO: '📣',
-            QUINA: '🌟',
-            BINGO: '👑'
-        },
-        BOTOES: {
-            TITULO_PL: 'Sorteador',
-            TITULO_B: 'Bingo POO Profesional',
-            SORTEAR: 'Sortear Siguiente Número',
-            TIPO_VITORIA: 'Tipo de Victoria',
-            REINICIAR: 'Reiniciar Bingo',
-            TITULO_MENU: 'Selecciona el Idioma:'
-        }
+        BOTOES: { SORTEAR: 'Sortear Siguiente Número', REINICIAR: 'Reiniciar Bingo', TITULO_B: 'Bingo POO Profesional', TITULO_PL: 'Sorteador' }
     },
-    // -------------------------------------------------------------------
-    // 4. CHINÊS SIMPLIFICADO (zh-cn)
-    // -------------------------------------------------------------------
-    'zh-cn': {
+    'zh-cn': { 
         SAUDACAO: '欢迎! 一切准备就绪。',
         CHAMANDO: (letra, numero) => `叫号: [${letra}] - ${numero}! 请检查您的卡片。`,
-        QUINA_MSG: '✨ 连线! 连线! 马上成功! 吉祥物庆祝!',
-        BINGO_MSG: '宾果!!! 🎉🎉🎉 赢家! 好运气!',
+        QUINA_MSG: '✨ 连线! 连线! 马上成功!',
+        BINGO_MSG: '宾果!!! 🎉🎉🎉 赢家!',
         FIM_JOGO: '游戏结束! 所有号码都已摇出。',
         PLACEHOLDER_INICIAL: '点击 "抽奖" 开始!',
-        MSG_ALERTA_CARTELA: (tipo) => `注意: 示例卡片获得了 ${tipo}!`,
-        EMOJIS: {
-            INICIAL: '💖',
-            CHAMANDO: '📣',
-            QUINA: '🌟',
-            BINGO: '👑'
-        },
-        BOTOES: {
-            TITULO_PL: '抽奖机',
-            TITULO_B: 'POO 专业宾果',
-            SORTEAR: '摇出下一个号码',
-            TIPO_VITORIA: '获胜类型',
-            REINICIAR: '重新开始宾果',
-            TITULO_MENU: '选择语言:'
-        }
+        BOTOES: { SORTEAR: '摇出下一个号码', REINICIAR: '重新开始宾果', TITULO_B: 'POO 专业宾果', TITULO_PL: '抽奖机' }
     }
 };
 
 let idiomaAtual = 'pt-br'; 
+let cartelaCounter = 1; 
 
-// --- 4. CONTROLE DOM E LÓGICA DE INTERAÇÃO (Traduzido) ---
+
+// ==============================================================================
+// 4. VARIÁVEIS DE CONTROLE GLOBAL E FUNÇÕES (NÃO DEPENDEM DO DOM)
+// ==============================================================================
 
 const bingo = new SorteadorBingoBrasileiro();
-const CARTELA_EXEMPLO = SorteadorBingoBrasileiro.gerarCartela();
+const ID_PRIMEIRA_CARTELA = "cartela-exemplo-id"; 
+const BINGO_CARTELA_DATA = SorteadorBingoBrasileiro.gerarCartela(null); 
+const CARTELA_EXEMPLO = SorteadorBingoBrasileiro.montarCartelaHTML(BINGO_CARTELA_DATA, ID_PRIMEIRA_CARTELA); 
 
-// Referências DOM
-const btnSortear = document.getElementById('btn-sortear');
-const btnAlternarVitoria = document.getElementById('btn-alternar-vitoria');
-const tipoVitoriaAtualSpan = document.getElementById('tipo-vitoria-atual');
-const letraSorteadaSpan = document.getElementById('letra-sorteada');
-const numeroSorteadoSpan = document.getElementById('numero-sorteado');
-const statusTexto = document.getElementById('status-texto');
-const qtdSorteadasSpan = document.getElementById('qtd-sorteadas');
-const bolinhasContainer = document.getElementById('bolinhas-container');
-const cartelaContainer = document.getElementById('bingo-card');
+// Variáveis DOM serão definidas dentro do DOMContentLoaded
+let btnSortear; 
+let btnReiniciar; 
+let btnAddCartela; 
+let numeroSorteadoDisplay;
+let cartelasAgrupadasDiv;
+let tipoVitoriaAtualSpan;
+let btnAlternarVitoria;
+let notificacaoToast;
+let notificacaoMensagem;
 
-const alertaMascoteDiv = document.getElementById('alerta-mascote');
-const mascoteEmojiSpan = document.getElementById('mascote-emoji');
-const mensagemAlertaDiv = document.getElementById('mensagem-alerta');
+// --- Função de Notificação Customizada (Substitui o alert()) ---
 
+/**
+ * Exibe uma notificação Toast customizada no lugar do alert().
+ * @param {string} mensagem - A mensagem a ser exibida.
+ * @param {string} tipo - 'quina', 'bingo' ou 'alerta' para cores diferentes.
+ */
+function mostrarNotificacao(mensagem, tipo) {
+    if (notificacaoToast && notificacaoMensagem) {
+        // Define a mensagem e o estilo
+        notificacaoMensagem.textContent = mensagem;
+        
+        // Limpa classes anteriores
+        notificacaoToast.classList.remove('show', 'quina', 'bingo', 'alerta');
 
-function mudarIdioma(novoIdioma) {
-    if (TRADUCOES[novoIdioma]) {
-        idiomaAtual = novoIdioma;
-        renderHeader(); // Renderiza cabeçalhos e textos estáticos
-        renderPlacar(); // Renderiza placar e mensagens dinâmicas
+        // Adiciona a classe de estilo
+        if (tipo) {
+            notificacaoToast.classList.add(tipo);
+        } else {
+             // Default para alerta se o tipo não for especificado
+            notificacaoToast.classList.add('alerta'); 
+        }
+
+        // 1. Mostra o Toast
+        setTimeout(() => {
+            notificacaoToast.classList.add('show');
+        }, 10); 
+
+        // 2. Esconde o Toast após 3 segundos
+        setTimeout(() => {
+            notificacaoToast.classList.remove('show');
+        }, 3000); 
     }
 }
 
+
+// --- Funções de Renderização e Lógica ---
 
 function renderCartela() {
-    cartelaContainer.querySelectorAll('.cartela-celula').forEach(c => c.remove()); 
-
     const numerosChamados = new Set(bingo.bolinhasSorteadas);
-    const letras = ['B', 'I', 'N', 'G', 'O'];
+    const cartelaHTML = document.getElementById(ID_PRIMEIRA_CARTELA);
+    
+    if (!cartelaHTML) return;
 
-    for (let i = 0; i < 5; i++) {
-        for (const letra of letras) {
-            const valor = CARTELA_EXEMPLO[letra][i];
-            const celula = document.createElement('div');
-            celula.classList.add('cartela-celula');
-            
-            celula.textContent = valor;
-            
-            if (valor === 'FREE') {
-                celula.classList.add('celula-free', 'celula-marcada');
-            } else if (typeof valor === 'number' && numerosChamados.has(valor)) {
-                celula.classList.add('celula-marcada');
-            }
-            
-            cartelaContainer.appendChild(celula);
-        }
-    }
-}
+    cartelaHTML.classList.remove('efeito-quina', 'efeito-bingo');
 
-// Função para o mascote e alertas (com lógica de animação e tradução)
-function atualizarMascote(tipoVitoria, ultimoNumero) {
-    const LANG = TRADUCOES[idiomaAtual];
-    let emoji = LANG.EMOJIS.INICIAL;
-    let mensagem = LANG.SAUDACAO;
-    let classeAlerta = '';
-
-    if (tipoVitoria === "Quina") {
-        emoji = LANG.EMOJIS.QUINA;
-        mensagem = LANG.QUINA_MSG;
-        classeAlerta = 'alerta-vitoria';
-    } else if (tipoVitoria === "Bingo") {
-        emoji = LANG.EMOJIS.BINGO;
-        mensagem = LANG.BINGO_MSG;
-        classeAlerta = 'alerta-vitoria';
-    } else if (ultimoNumero) {
-        emoji = LANG.EMOJIS.CHAMANDO;
-        // Usa a função dentro do objeto de tradução para construir a string
-        mensagem = LANG.CHAMANDO(bingo.letra, ultimoNumero); 
-    }
-
-    mascoteEmojiSpan.textContent = emoji;
-    mensagemAlertaDiv.textContent = mensagem;
-
-    // Remove classes de alerta e animação
-    alertaMascoteDiv.classList.remove('alerta-vitoria');
-    mascoteEmojiSpan.classList.remove('animar-mascote'); 
-
-    // Adiciona classes de alerta (cor) e dispara animação se for vitória
-    if (classeAlerta) {
-        alertaMascoteDiv.classList.add(classeAlerta);
+    cartelaHTML.querySelectorAll('.cartela-celula').forEach(celula => {
+        const valor = celula.getAttribute('data-numero');
         
-        if (tipoVitoria === "Quina" || tipoVitoria === "Bingo") {
-             // Usa setTimeout para forçar o reset da animação e dispará-la novamente
-             setTimeout(() => {
-                mascoteEmojiSpan.classList.add('animar-mascote');
-             }, 0);
+        if (valor === 'FREE' || numerosChamados.has(Number(valor))) {
+            celula.classList.add('marcado');
+        } else {
+            celula.classList.remove('marcado');
         }
+    });
+    
+    const resultadoVitoria = SorteadorBingoBrasileiro.verificarVitoria(bingo, BINGO_CARTELA_DATA, bingo.bolinhasSorteadas);
+    
+    // === DISPARO DA NOTIFICAÇÃO DE VITÓRIA (QUINA/BINGO) ===
+    if (resultadoVitoria.tipo === "Quina") {
+        cartelaHTML.classList.add('efeito-quina');
+        mostrarNotificacao(TRADUCOES[idiomaAtual].QUINA_MSG, 'quina');
+        
+    } else if (resultadoVitoria.tipo === "Bingo") {
+        cartelaHTML.classList.add('efeito-bingo');
+        mostrarNotificacao(TRADUCOES[idiomaAtual].BINGO_MSG, 'bingo');
+        btnSortear.disabled = true;
     }
+    // ======================================
 }
 
-// NOVO: Função para renderizar textos estáticos (cabeçalhos, botões)
 function renderHeader() {
     const LANG = TRADUCOES[idiomaAtual];
-    
-    // Atualiza o Título na aba do Navegador
-    document.title = `${LANG.BOTOES.TITULO_B} - ${LANG.BOTOES.TITULO_PL}`;
-    
-    // Atualiza o Título Principal
-    document.querySelector('header h1').textContent = `🎉 ${LANG.BOTOES.TITULO_B} - Módulo ${LANG.BOTOES.TITULO_PL} 🎉`;
-    document.querySelector('header p').textContent = 'Desenvolvido com lógica de Orientação a Objetos (POO) em JavaScript';
-    
-    // Atualiza textos estáticos dos controles
-    document.getElementById('btn-sortear').textContent = LANG.BOTOES.SORTEAR;
-    document.getElementById('btn-reiniciar').textContent = LANG.BOTOES.REINICIAR;
-    document.querySelector('#seletor-idioma p').textContent = LANG.BOTOES.TITULO_MENU;
-
-    // Atualiza o subtítulo do Histórico
-    document.querySelector('#historico h2').textContent = `${LANG.BOTOES.TITULO_B} Sorteadas (${bingo.qtdBolinhasSorteadas}/75)`;
+    const titulo = document.querySelector('header h1');
+    if (titulo) {
+        titulo.textContent = `🎉 ${LANG.BOTOES.TITULO_B} - Módulo ${LANG.BOTOES.TITULO_PL} 🎉`;
+    }
+    if (btnSortear) {
+        btnSortear.textContent = LANG.BOTOES.SORTEAR;
+    }
+    if (btnReiniciar) {
+        btnReiniciar.textContent = LANG.BOTOES.REINICIAR;
+    }
 }
 
 
 function renderPlacar() {
-    const LANG = TRADUCOES[idiomaAtual];
-
-    letraSorteadaSpan.textContent = bingo.letra || 'B';
-    numeroSorteadoSpan.textContent = bingo.ultimoNumeroSorteado || '00';
-    qtdSorteadasSpan.textContent = bingo.qtdBolinhasSorteadas;
-    tipoVitoriaAtualSpan.textContent = bingo.tipoVitoria;
+    const ultimoNum = bingo.ultimoNumeroSorteado;
+    const letra = bingo.letra;
     
-    // Atualiza o texto do botão de vitória
-    document.getElementById('btn-alternar-vitoria').textContent = 
-        `${LANG.BOTOES.TIPO_VITORIA}: ${bingo.tipoVitoria}`;
-
-    let resultadoVitoria = { tipo: "Nenhum" };
-
-    if (bingo.ultimoNumeroSorteado) {
-        resultadoVitoria = SorteadorBingoBrasileiro.verificarVitoria(CARTELA_EXEMPLO, bingo.bolinhasSorteadas);
-        
-        if (resultadoVitoria.tipo !== "Nenhum") {
-            atualizarMascote(resultadoVitoria.tipo);
-            statusTexto.textContent = LANG.MSG_ALERTA_CARTELA(resultadoVitoria.tipo);
+    if (numeroSorteadoDisplay) {
+        if (ultimoNum) {
+            numeroSorteadoDisplay.textContent = `${letra} ${ultimoNum}`; 
         } else {
-            atualizarMascote(null, bingo.ultimoNumeroSorteado); 
-            statusTexto.textContent = LANG.CHAMANDO(bingo.letra, bingo.ultimoNumeroSorteado);
+            numeroSorteadoDisplay.textContent = '--';
         }
-
-    } else {
-        atualizarMascote(null, null); 
-        statusTexto.textContent = LANG.PLACEHOLDER_INICIAL;
     }
-
-
-    if (bingo.todosNumerosSorteadas) {
+    
+    if (bingo.todosNumerosSortadas && btnSortear) {
         btnSortear.disabled = true;
-        statusTexto.textContent = LANG.FIM_JOGO;
-        atualizarMascote(null, null);
     }
 }
 
-function renderHistorico() {
-    bolinhasContainer.innerHTML = '';
+function mudarIdioma(novoIdioma) {
+    if (TRADUCOES[novoIdioma]) {
+        idiomaAtual = novoIdioma;
+        renderHeader(); 
+        renderPlacar(); 
+        if (tipoVitoriaAtualSpan) {
+            tipoVitoriaAtualSpan.textContent = bingo.tipoVitoria;
+        }
+    }
+}
+
+function adicionarNovaCartela() {
+    cartelaCounter++;
+    const novoID = `cartela-${cartelaCounter}-id`;
     
-    bingo.bolinhasSorteadas.forEach(num => {
-        const bolinha = document.createElement('div');
-        bolinha.classList.add('bolinha');
-        bolinha.textContent = num;
-        bolinhasContainer.appendChild(bolinha);
-    });
-    bolinhasContainer.scrollTop = bolinhasContainer.scrollHeight;
+    const novaCartelaData = SorteadorBingoBrasileiro.gerarCartela(null);
+    const novaCartelaHTML = SorteadorBingoBrasileiro.montarCartelaHTML(novaCartelaData, novoID); 
     
-    // Garante que a contagem no histórico seja traduzida
-    document.querySelector('#historico h2').textContent = `${TRADUCOES[idiomaAtual].BOTOES.TITULO_B} Sorteadas (${bingo.qtdBolinhasSorteadas}/75)`;
+    if (cartelasAgrupadasDiv) {
+        cartelasAgrupadasDiv.innerHTML += novaCartelaHTML;
+    }
 }
 
 
-// --- Event Listeners ---
+// ==============================================================================
+// 5. INICIALIZAÇÃO E CONEXÃO DOS BOTÕES (ISOLADO PARA SEGURANÇA)
+// ==============================================================================
 
-btnSortear.addEventListener('click', () => {
-    if (bingo.sortearNumero()) {
-        renderPlacar();
-        renderHistorico();
-        renderCartela();
-    } else {
-        alert(TRADUCOES[idiomaAtual].FIM_JOGO);
-    }
-});
-
-btnAlternarVitoria.addEventListener('click', () => {
-    const novoIndice = (bingo.tipoVitoriaIndice + 1) % 2; 
-    bingo.tipoVitoria = novoIndice;
-    tipoVitoriaAtualSpan.textContent = bingo.tipoVitoria;
-    alert(`${TRADUCOES[idiomaAtual].BOTOES.TIPO_VITORIA} alterado para: ${bingo.tipoVitoria}`);
-});
-
-document.getElementById('btn-reiniciar').addEventListener('click', () => {
-    if (confirm('Tem certeza que deseja REINICIAR o Bingo?')) {
-        location.reload();
-    }
-});
-
-// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
-    renderCartela();
+    // 1. REFERÊNCIAS DOM: Conexão segura
+    btnSortear = document.getElementById('btnSortear'); 
+    btnReiniciar = document.getElementById('btnReiniciar'); 
+    btnAddCartela = document.getElementById('btnAddCartela'); 
+    numeroSorteadoDisplay = document.querySelector('.numero-sorteado');
+    cartelasAgrupadasDiv = document.querySelector('.cartelas-agrupadas');
+    tipoVitoriaAtualSpan = document.getElementById('tipo-vitoria-atual');
+    btnAlternarVitoria = document.getElementById('btnAlternarVitoria');
+    notificacaoToast = document.getElementById('notificacao-vitoria'); 
+    notificacaoMensagem = document.getElementById('notificacao-mensagem'); 
+
+
+    // 2. ADICIONAR CARTELA INICIAL
+    if (cartelasAgrupadasDiv) {
+        cartelasAgrupadasDiv.innerHTML = CARTELA_EXEMPLO; 
+    }
+    
+    // 3. EVENT LISTENERS FINAIS
+    
+    // Sortear
+    if (btnSortear) {
+        btnSortear.addEventListener('click', () => {
+            if (bingo.sortearNumero()) {
+                renderPlacar();
+                renderCartela();
+            } else {
+                // FIM DE JOGO
+                mostrarNotificacao(TRADUCOES[idiomaAtual].FIM_JOGO, 'alerta'); 
+            }
+        });
+    }
+
+    // Reiniciar
+    if (btnReiniciar) {
+        btnReiniciar.addEventListener('click', () => {
+            if (confirm(TRADUCOES[idiomaAtual].BOTOES.REINICIAR + '?')) {
+                location.reload();
+            }
+        });
+    }
+
+    // Adicionar Cartela
+    if (btnAddCartela) {
+        btnAddCartela.addEventListener('click', adicionarNovaCartela);
+    }
+
+    // Seleção de Idioma
+    document.querySelectorAll('.idioma-btn').forEach(btn => {
+        btn.addEventListener('click', (event) => {
+            let idioma = event.target.getAttribute('data-lang');
+            
+            if (!idioma) {
+                const texto = event.target.textContent.toLowerCase().trim();
+                const mapaTextos = {
+                    'português br': 'pt-br',
+                    'english us': 'en-us',
+                    'español es': 'es-es',
+                    '中文 (zh) cn': 'zh-cn',
+                    '中文 (zh)': 'zh-cn' 
+                };
+                idioma = mapaTextos[texto] || 'pt-br';
+            }
+            
+            mudarIdioma(idioma); 
+        });
+    });
+
+    // Alternar Tipo de Vitória
+    if (btnAlternarVitoria && tipoVitoriaAtualSpan) {
+        btnAlternarVitoria.addEventListener('click', () => {
+            bingo.tipoVitoria = (bingo.tipoVitoriaIndice + 1) % 2; 
+            tipoVitoriaAtualSpan.textContent = bingo.tipoVitoria;
+        });
+    }
+
+
+    // 4. INICIALIZAÇÃO DOS RENDERIZADORES
     renderHeader(); 
     renderPlacar();
-    renderHistorico();
+    renderCartela();
+    
+    if (tipoVitoriaAtualSpan) {
+         tipoVitoriaAtualSpan.textContent = bingo.tipoVitoria;
+    }
 });
